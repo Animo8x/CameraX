@@ -2,6 +2,7 @@ package com.example.camerax.ui.screens
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.os.Build
 import android.view.ViewGroup
 import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
@@ -23,6 +24,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -37,12 +39,17 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import com.example.camerax.model.AspectRatioOption
+import com.example.camerax.model.CameraFilter
+import com.example.camerax.processing.ImageProcessingPipeline
 import androidx.core.content.ContextCompat
 import com.example.camerax.camera.CameraViewModel
 import com.example.camerax.model.CameraMode
@@ -200,6 +207,7 @@ fun CameraScreen(
                         }
                         is VideoRecordEvent.Finalize -> {
                             viewModel.stopRecordingTimer()
+                            viewModel.mediaRepository.notifyVideoRecorded(videoFile)
                             coroutineScope.launch {
                                 viewModel.mediaRepository.refreshMediaList()
                             }
@@ -215,6 +223,7 @@ fun CameraScreen(
                         viewModel.startRecordingTimer()
                     } else if (event is VideoRecordEvent.Finalize) {
                         viewModel.stopRecordingTimer()
+                        viewModel.mediaRepository.notifyVideoRecorded(videoFile)
                         coroutineScope.launch {
                             viewModel.mediaRepository.refreshMediaList()
                         }
@@ -227,47 +236,170 @@ fun CameraScreen(
         }
     }
 
+    // Live Color Studio Hardware RenderEffect on Android 12+ (API 31+)
+    LaunchedEffect(uiState.colorStudioConfig, uiState.selectedFilter, previewView) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val pView = previewView ?: return@LaunchedEffect
+            val matrix = ImageProcessingPipeline.createCombinedColorMatrix(
+                uiState.colorStudioConfig,
+                uiState.selectedFilter
+            )
+            val effect = android.graphics.RenderEffect.createColorFilterEffect(
+                android.graphics.ColorMatrixColorFilter(matrix)
+            )
+            pView.setRenderEffect(effect)
+        }
+    }
+
     Box(
         modifier = modifier
             .fillMaxSize()
             .background(Color.Black)
     ) {
-        // Camera Viewfinder (PreviewView) with pinch-to-zoom
-        AndroidView(
-            factory = { ctx ->
-                PreviewView(ctx).apply {
-                    layoutParams = ViewGroup.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.MATCH_PARENT
-                    )
-                    scaleType = PreviewView.ScaleType.FILL_CENTER
-                    implementationMode = PreviewView.ImplementationMode.PERFORMANCE
-                    previewView = this
-                }
-            },
-            modifier = Modifier
+        // Aspect Ratio Box Container (1:1, 4:3, 16:9, Full)
+        val viewfinderModifier = when (uiState.aspectRatio) {
+            AspectRatioOption.RATIO_1_1 -> Modifier
+                .fillMaxWidth()
+                .aspectRatio(1f)
+                .align(Alignment.Center)
+            AspectRatioOption.RATIO_4_3 -> Modifier
+                .fillMaxWidth()
+                .aspectRatio(3f / 4f)
+                .align(Alignment.Center)
+            AspectRatioOption.RATIO_16_9 -> Modifier
+                .fillMaxWidth()
+                .aspectRatio(9f / 16f)
+                .align(Alignment.Center)
+            AspectRatioOption.RATIO_FULL -> Modifier
                 .fillMaxSize()
-                .pointerInput(Unit) {
-                    detectTransformGestures { _, _, zoom, _ ->
-                        if (zoom != 1.0f) {
-                            viewModel.onPinchZoom(zoom)
-                        }
-                    }
-                }
-        )
-
-        // Shutter Flash Animation Overlay
-        if (uiState.shutterFlash) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.White.copy(alpha = 0.85f))
-            )
+                .align(Alignment.Center)
         }
 
-        // Viewfinder Overlays
-        if (uiState.proControls.showGrid) {
-            GridLinesOverlay()
+        Box(
+            modifier = viewfinderModifier
+                .clipToBounds()
+                .graphicsLayer {
+                    scaleX = uiState.digitalZoomScale
+                    scaleY = uiState.digitalZoomScale
+                }
+        ) {
+            // Camera Viewfinder (PreviewView) with pinch-to-zoom
+            AndroidView(
+                factory = { ctx ->
+                    PreviewView(ctx).apply {
+                        layoutParams = ViewGroup.LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT,
+                            ViewGroup.LayoutParams.MATCH_PARENT
+                        )
+                        scaleType = PreviewView.ScaleType.FILL_CENTER
+                        implementationMode = PreviewView.ImplementationMode.COMPATIBLE
+                        previewView = this
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxSize()
+                    .pointerInput(Unit) {
+                        detectTransformGestures { _, _, zoom, _ ->
+                            if (zoom != 1.0f) {
+                                viewModel.onPinchZoom(zoom)
+                            }
+                        }
+                    }
+            )
+
+            // Live Color Studio Real-time Tint Layers (Tone, Warmth, Brightness, Filters)
+            val studio = uiState.colorStudioConfig
+            val warmthFactor = (studio.warmth / 100f).coerceIn(-1f, 1f)
+            if (warmthFactor > 0.05f) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color(0xFFFFA500).copy(alpha = warmthFactor * 0.28f))
+                )
+            } else if (warmthFactor < -0.05f) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color(0xFF38BDF8).copy(alpha = -warmthFactor * 0.28f))
+                )
+            }
+
+            val toneFactor = (studio.tone / 100f).coerceIn(-1f, 1f)
+            if (toneFactor > 0.05f) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color(0xFF4ADE80).copy(alpha = toneFactor * 0.20f))
+                )
+            } else if (toneFactor < -0.05f) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color(0xFFF43F5E).copy(alpha = -toneFactor * 0.20f))
+                )
+            }
+
+            if (studio.brightness > 5f) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.White.copy(alpha = (studio.brightness / 100f) * 0.35f))
+                )
+            } else if (studio.brightness < -5f) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Black.copy(alpha = (-studio.brightness / 100f) * 0.45f))
+                )
+            }
+
+            when (uiState.selectedFilter) {
+                CameraFilter.MONO -> {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color.Black.copy(alpha = 0.15f))
+                    )
+                }
+                CameraFilter.VINTAGE -> {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color(0xFFD4A373).copy(alpha = 0.22f))
+                    )
+                }
+                CameraFilter.CINEMATIC -> {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color(0xFF0F766E).copy(alpha = 0.20f))
+                    )
+                }
+                CameraFilter.WARM_GLOW -> {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color(0xFFF59E0B).copy(alpha = 0.22f))
+                    )
+                }
+                CameraFilter.COOL_BREEZE -> {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color(0xFF0284C7).copy(alpha = 0.22f))
+                    )
+                }
+                else -> {}
+            }
+
+            // Viewfinder Overlays inside the framed viewport
+            if (uiState.proControls.showGrid) {
+                GridLinesOverlay()
+            }
+
+            if (uiState.currentMode == CameraMode.DOCUMENT) {
+                DocumentGuideOverlay()
+            }
         }
 
         if (uiState.proControls.showLevel) {
@@ -285,9 +417,7 @@ fun CameraScreen(
             }
         }
 
-        if (uiState.currentMode == CameraMode.DOCUMENT) {
-            DocumentGuideOverlay()
-        }
+
 
         // Timer Countdown Overlay
         TimerCountdownOverlay(countdown = uiState.timerCountdown)

@@ -75,11 +75,16 @@ class CameraHardwareManager(private val context: Context) {
                     val c = cameraManager.getCameraCharacteristics(id)
                     if (c.get(CameraCharacteristics.LENS_FACING) == targetFacing) {
                         val focals = c.get(CameraCharacteristics.LENS_INFO_AVAILABLE_FOCAL_LENGTHS)
-                        if (focals != null && focals.any { it < 3.0f }) {
+                        if (focals != null && focals.any { it < 3.2f }) {
                             hasUltraWide = true
                         }
                     }
                 } catch (ignored: Exception) {}
+            }
+
+            // On modern multi-camera back systems, enable ultra-wide 0.5x
+            if (isBackCamera && cameraManager.cameraIdList.size >= 2) {
+                hasUltraWide = true
             }
 
             // Generate clean sensible zoom pills for this camera

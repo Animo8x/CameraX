@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <paths xmlns:android="http://schemas.android.com/apk/res/android">
+    <external-path name="dcim_camera" path="DCIM/Camera" />
+    <external-path name="external_storage" path="." />
     <external-files-path name="camera_pictures" path="Pictures/" />
     <external-files-path name="camera_movies" path="Movies/" />
     <cache-path name="camera_cache" path="." />

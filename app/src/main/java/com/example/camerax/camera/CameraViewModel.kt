@@ -65,7 +65,8 @@ data class CameraUiState(
     val extendedZoom100xEnabled: Boolean = false,
     val batteryPercent: Int = 85,
     val freeStorageGb: Float = 12.4f,
-    val focusPointNormalized: Pair<Float, Float>? = null
+    val focusPointNormalized: Pair<Float, Float>? = null,
+    val digitalZoomScale: Float = 1.0f
 )
 
 class CameraViewModel(application: Application) : AndroidViewModel(application) {
@@ -88,24 +89,28 @@ class CameraViewModel(application: Application) : AndroidViewModel(application) 
     init {
         // Load initial capabilities
         val initialCaps = hardwareManager.getCapabilities(isBackCamera = true)
-        val initialPrefs = settingsRepository.preferences.value
+        _uiState.value = _uiState.value.copy(capabilities = initialCaps)
 
-        _uiState.value = _uiState.value.copy(
-            capabilities = initialCaps,
-            extendedZoom100xEnabled = initialPrefs.extendedZoom100x,
-            aiEnhanceConfig = AiEnhanceConfig(enabled = initialPrefs.aiEnhanceEnabled),
-            superNightConfig = SuperNightConfig(enabled = initialPrefs.superNightEnabled),
-            steadyProLevel = initialPrefs.steadyProLevel,
-            selectedFilter = initialPrefs.selectedFilter,
-            colorStudioConfig = initialPrefs.colorStudioConfig,
-            aspectRatio = initialPrefs.aspectRatio,
-            proControls = ProControlsState(
-                showGrid = initialPrefs.showGrid,
-                showLevel = initialPrefs.showLevel,
-                showHistogram = initialPrefs.showHistogram,
-                showFocusPeaking = initialPrefs.showFocusPeaking
-            )
-        )
+        // Reactively observe ALL setting changes so toggles take effect immediately without app restart
+        viewModelScope.launch {
+            settingsRepository.preferences.collect { prefs ->
+                _uiState.value = _uiState.value.copy(
+                    extendedZoom100xEnabled = prefs.extendedZoom100x,
+                    aiEnhanceConfig = AiEnhanceConfig(enabled = prefs.aiEnhanceEnabled),
+                    superNightConfig = SuperNightConfig(enabled = prefs.superNightEnabled),
+                    steadyProLevel = prefs.steadyProLevel,
+                    selectedFilter = prefs.selectedFilter,
+                    colorStudioConfig = prefs.colorStudioConfig,
+                    aspectRatio = prefs.aspectRatio,
+                    proControls = _uiState.value.proControls.copy(
+                        showGrid = prefs.showGrid,
+                        showLevel = prefs.showLevel,
+                        showHistogram = prefs.showHistogram,
+                        showFocusPeaking = prefs.showFocusPeaking
+                    )
+                )
+            }
+        }
 
         // Read battery and storage
         refreshDeviceStats()
@@ -204,11 +209,24 @@ class CameraViewModel(application: Application) : AndroidViewModel(application) 
         }
         val maxLimit = if (_uiState.value.extendedZoom100xEnabled) 100f else _uiState.value.capabilities.maxZoomRatio
         val clamped = ratio.coerceIn(minLimit, maxLimit)
-        _uiState.value = _uiState.value.copy(zoomRatio = clamped)
+        
+        val hwMax = _uiState.value.capabilities.maxZoomRatio
+        val digitalScale = if (clamped > hwMax && hwMax > 0f) {
+            clamped / hwMax
+        } else {
+            1.0f
+        }
+
+        _uiState.value = _uiState.value.copy(
+            zoomRatio = clamped,
+            digitalZoomScale = digitalScale
+        )
 
         // For values above physical maxZoomRatio, CameraX will use max hardware zoom, and display crop takes effect
-        val hwZoom = clamped.coerceIn(_uiState.value.capabilities.minZoomRatio, _uiState.value.capabilities.maxZoomRatio)
-        activeCameraControl?.setZoomRatio(hwZoom)
+        val hwZoom = clamped.coerceIn(_uiState.value.capabilities.minZoomRatio, hwMax)
+        try {
+            activeCameraControl?.setZoomRatio(hwZoom)
+        } catch (ignored: Exception) {}
     }
 
     fun onPinchZoom(deltaScale: Float) {
@@ -383,7 +401,9 @@ class CameraViewModel(application: Application) : AndroidViewModel(application) 
                 filter = _uiState.value.selectedFilter,
                 aiConfig = _uiState.value.aiEnhanceConfig,
                 nightConfig = _uiState.value.superNightConfig,
-                isDocumentMode = _uiState.value.currentMode == CameraMode.DOCUMENT
+                isDocumentMode = _uiState.value.currentMode == CameraMode.DOCUMENT,
+                aspectRatio = _uiState.value.aspectRatio,
+                digitalCropScale = _uiState.value.digitalZoomScale
             )
 
             _uiState.value = _uiState.value.copy(

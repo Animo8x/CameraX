@@ -248,7 +248,7 @@ fun SettingsScreen(
             SettingsSectionHeader(icon = Icons.Default.SdCard, title = "11. Storage & Quality")
             SettingsInfoItem(
                 title = "Storage Location",
-                description = "Pictures/CameraX and Movies/CameraX in device storage"
+                description = "DCIM/Camera (Saved directly into phone's public Camera folder and Gallery)"
             )
 
             // Section 12: Interface & Privacy

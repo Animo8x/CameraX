@@ -37,6 +37,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
@@ -70,8 +71,17 @@ fun CameraTopBar(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .background(Color.Black.copy(alpha = 0.45f))
-            .padding(horizontal = 12.dp, vertical = 6.dp)
+            .background(
+                androidx.compose.ui.graphics.Brush.verticalGradient(
+                    colors = listOf(
+                        Color.Black.copy(alpha = 0.85f),
+                        Color.Black.copy(alpha = 0.65f),
+                        Color.Black.copy(alpha = 0.0f)
+                    )
+                )
+            )
+            .statusBarsPadding()
+            .padding(start = 14.dp, top = 8.dp, end = 14.dp, bottom = 16.dp)
     ) {
         // Discreet telemetry row (Battery & Free Storage)
         Row(

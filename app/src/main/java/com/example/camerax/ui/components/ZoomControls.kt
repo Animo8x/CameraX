@@ -55,10 +55,13 @@ fun ZoomControls(
     var showPrecisionSlider by remember { mutableStateOf(false) }
 
     val effectiveMaxZoom = if (extendedZoomEnabled) 100f else maxZoom
+    val effectiveMinZoom = if (supportedSteps.any { it < 0.95f } || minZoom < 0.95f) 0.5f else minZoom
     val steps = remember(supportedSteps, extendedZoomEnabled, maxZoom) {
         val list = supportedSteps.toMutableList()
-        if (extendedZoomEnabled && !list.contains(100f)) {
-            list.add(100f)
+        if (extendedZoomEnabled) {
+            if (!list.contains(10f)) list.add(10f)
+            if (!list.contains(30f)) list.add(30f)
+            if (!list.contains(100f)) list.add(100f)
         }
         list.distinct().sorted()
     }
@@ -93,7 +96,7 @@ fun ZoomControls(
                 Slider(
                     value = currentZoom,
                     onValueChange = onZoomChange,
-                    valueRange = minZoom..effectiveMaxZoom,
+                    valueRange = effectiveMinZoom..effectiveMaxZoom,
                     colors = SliderDefaults.colors(
                         thumbColor = CameraGold,
                         activeTrackColor = CameraGold,
