@@ -1,0 +1,77 @@
+<resources>
+    <string name="app_name">CameraX</string>
+    <string name="mode_photo">PHOTO</string>
+    <string name="mode_video">VIDEO</string>
+    <string name="mode_portrait">PORTRAIT</string>
+    <string name="mode_night">NIGHT</string>
+    <string name="mode_pro">PRO</string>
+    <string name="mode_document">DOCS</string>
+
+    <string name="action_capture_photo">Capture photo</string>
+    <string name="action_start_video">Start recording</string>
+    <string name="action_stop_video">Stop recording</string>
+    <string name="action_switch_camera">Switch camera</string>
+    <string name="action_gallery">Open gallery</string>
+    <string name="action_settings">Camera settings</string>
+    <string name="action_flash">Flash mode</string>
+    <string name="action_timer">Timer</string>
+    <string name="action_aspect_ratio">Aspect ratio</string>
+    <string name="action_color_studio">Color Studio</string>
+    <string name="action_filters">Filters</string>
+    <string name="action_ai_enhance">AI Enhancement</string>
+    <string name="action_super_night">Super Night Mode</string>
+    <string name="action_steady_pro">Steady Pro Stabilization</string>
+    <string name="action_grid">Grid lines</string>
+    <string name="action_level">Leveler</string>
+    <string name="action_burst">Burst capture</string>
+
+    <string name="flash_auto">Flash Auto</string>
+    <string name="flash_on">Flash On</string>
+    <string name="flash_off">Flash Off</string>
+    <string name="flash_torch">Torch</string>
+
+    <string name="timer_off">Timer Off</string>
+    <string name="timer_3s">3s</string>
+    <string name="timer_5s">5s</string>
+    <string name="timer_10s">10s</string>
+
+    <string name="night_processing">Processing Super Night capture… Keep steady</string>
+    <string name="hold_still">Hold still</string>
+    <string name="recording_indicator">REC</string>
+    <string name="storage_available">Available Storage</string>
+    <string name="battery_level">Battery</string>
+
+    <string name="permission_camera_title">Camera Permission Required</string>
+    <string name="permission_camera_desc">CameraX requires camera access to preview, capture photos, and record video.</string>
+    <string name="permission_audio_title">Microphone Access</string>
+    <string name="permission_audio_desc">Audio permission is needed to record high-fidelity sound during video recording.</string>
+    <string name="permission_grant">Grant Permissions</string>
+    <string name="permission_denied_warning">Without camera permission, the camera viewfinder cannot open.</string>
+
+    <string name="gallery_title">CameraX Gallery</string>
+    <string name="gallery_empty">No captured media yet</string>
+    <string name="gallery_delete">Delete</string>
+    <string name="gallery_share">Share</string>
+    <string name="gallery_edit">Edit</string>
+    <string name="gallery_info">Details</string>
+    <string name="gallery_delete_confirm">Are you sure you want to delete this media item?</string>
+
+    <string name="editor_title">Photo Studio Editor</string>
+    <string name="editor_save_copy">Save Copy</string>
+    <string name="editor_compare">Compare Original</string>
+    <string name="editor_reset">Reset</string>
+
+    <string name="settings_title">Settings</string>
+    <string name="settings_photo_section">Photography</string>
+    <string name="settings_video_section">Video Recording</string>
+    <string name="settings_color_section">Color Studio</string>
+    <string name="settings_filters_section">Filters</string>
+    <string name="settings_ai_section">AI Enhancement</string>
+    <string name="settings_night_section">Super Night Mode</string>
+    <string name="settings_hdr_section">HDR &amp; Dynamic Range</string>
+    <string name="settings_zoom_section">Zoom &amp; Optics</string>
+    <string name="settings_stabilization_section">Steady Pro</string>
+    <string name="settings_pro_section">Pro Mode Controls</string>
+    <string name="settings_storage_section">Storage &amp; Quality</string>
+    <string name="settings_interface_section">Interface &amp; Privacy</string>
+</resources>

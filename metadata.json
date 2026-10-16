@@ -1,0 +1,6 @@
+{
+  "name": "CameraX",
+  "description": "Flagship professional camera app with advanced zoom, Pro manual controls, Color Studio, AI Enhancement, Super Night mode, and 4K video recording.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

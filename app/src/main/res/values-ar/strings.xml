@@ -1,0 +1,77 @@
+<resources>
+    <string name="app_name">CameraX</string>
+    <string name="mode_photo">صورة</string>
+    <string name="mode_video">فيديو</string>
+    <string name="mode_portrait">بورتريه</string>
+    <string name="mode_night">ليلي</string>
+    <string name="mode_pro">احترافي</string>
+    <string name="mode_document">مستندات</string>
+
+    <string name="action_capture_photo">التقاط صورة</string>
+    <string name="action_start_video">بدء التسجيل</string>
+    <string name="action_stop_video">إيقاف التسجيل</string>
+    <string name="action_switch_camera">تبديل الكاميرا</string>
+    <string name="action_gallery">المعرض</string>
+    <string name="action_settings">الإعدادات</string>
+    <string name="action_flash">الفلاش</string>
+    <string name="action_timer">المؤقت</string>
+    <string name="action_aspect_ratio">نسبة الأبعاد</string>
+    <string name="action_color_studio">Color Studio</string>
+    <string name="action_filters">الفلاتر</string>
+    <string name="action_ai_enhance">تحسين الذكاء الاصطناعي</string>
+    <string name="action_super_night">الوضع الليلي الفائق</string>
+    <string name="action_steady_pro">تثبيت Steady Pro</string>
+    <string name="action_grid">خطوط الشبكة</string>
+    <string name="action_level">المستوى الأفقي</string>
+    <string name="action_burst">التصوير المتتابع</string>
+
+    <string name="flash_auto">فلاش تلقائي</string>
+    <string name="flash_on">فلاش تشغيل</string>
+    <string name="flash_off">فلاش إيقاف</string>
+    <string name="flash_torch">إضاءة مستمرة</string>
+
+    <string name="timer_off">إيقاف المؤقت</string>
+    <string name="timer_3s">3 ثوانٍ</string>
+    <string name="timer_5s">5 ثوانٍ</string>
+    <string name="timer_10s">10 ثوانٍ</string>
+
+    <string name="night_processing">جارٍ معالجة اللقطة الليلية… حافظ على ثبات الهاتف</string>
+    <string name="hold_still">ثبّت الهاتف</string>
+    <string name="recording_indicator">تسجيل</string>
+    <string name="storage_available">المساحة المتوفرة</string>
+    <string name="battery_level">البطارية</string>
+
+    <string name="permission_camera_title">مطلوب إذن الكاميرا</string>
+    <string name="permission_camera_desc">يحتاج تطبيق CameraX إلى إذن الكاميرا للمعاينة والتقاط الصور وتسجيل الفيديو.</string>
+    <string name="permission_audio_title">إذن الميكروفون</string>
+    <string name="permission_audio_desc">مطلوب إذن الميكروفون لتسجيل الصوت النقي أثناء تصوير مقاطع الفيديو.</string>
+    <string name="permission_grant">منح الأذونات</string>
+    <string name="permission_denied_warning">بدون إذن الكاميرا لا يمكن فتح واجهة التصوير.</string>
+
+    <string name="gallery_title">معرض CameraX</string>
+    <string name="gallery_empty">لا توجد وسائط ملتقطة بعد</string>
+    <string name="gallery_delete">حذف</string>
+    <string name="gallery_share">مشاركة</string>
+    <string name="gallery_edit">تعديل</string>
+    <string name="gallery_info">تفاصيل</string>
+    <string name="gallery_delete_confirm">هل أنت متأكد من رغبتك في حذف هذا الملف؟</string>
+
+    <string name="editor_title">محرر استوديو الصور</string>
+    <string name="editor_save_copy">حفظ نسخة</string>
+    <string name="editor_compare">مقارنة مع الأصل</string>
+    <string name="editor_reset">إعادة ضبط</string>
+
+    <string name="settings_title">الإعدادات المتقدمة</string>
+    <string name="settings_photo_section">التصوير الفوتوغرافي</string>
+    <string name="settings_video_section">تصوير الفيديو</string>
+    <string name="settings_color_section">Color Studio</string>
+    <string name="settings_filters_section">الفلاتر</string>
+    <string name="settings_ai_section">تحسين الذكاء الاصطناعي</string>
+    <string name="settings_night_section">الوضع الليلي الفائق</string>
+    <string name="settings_hdr_section">HDR والنطاق الديناميكي</string>
+    <string name="settings_zoom_section">الزوم والعدسات</string>
+    <string name="settings_stabilization_section">تثبيت الفيديو Steady Pro</string>
+    <string name="settings_pro_section">الوضع الاحترافي Pro</string>
+    <string name="settings_storage_section">التخزين وجودة الملفات</string>
+    <string name="settings_interface_section">الواجهة والصوت والخصوصية</string>
+</resources>
