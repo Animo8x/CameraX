@@ -4,8 +4,12 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Matrix
 import androidx.activity.compose.BackHandler
+import com.example.camerax.ai.AiAnalysisResult
+import com.example.camerax.ai.AiVisionService
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -98,6 +102,8 @@ fun PhotoEditorScreen(
     var selectedPreset by remember { mutableStateOf(ColorStudioPreset.NATURAL) }
     var aiEnhanceEnabled by remember { mutableStateOf(false) }
     var rotationAngle by remember { mutableStateOf(0f) }
+    var aiResult by remember { mutableStateOf<AiAnalysisResult?>(null) }
+    var isAnalyzingAi by remember { mutableStateOf(false) }
 
     BackHandler { onNavigateBack() }
 
@@ -163,6 +169,38 @@ fun PhotoEditorScreen(
                     }
                 },
                 actions = {
+                    // AI Magic Vision Button
+                    IconButton(
+                        onClick = {
+                            val bmp = currentBitmap ?: originalBitmap ?: return@IconButton
+                            coroutineScope.launch {
+                                isAnalyzingAi = true
+                                val result = AiVisionService.analyzeImageWithAi(bmp)
+                                aiResult = result
+                                warmth = result.recommendedWarmth
+                                contrast = result.recommendedContrast
+                                brightness = result.recommendedBrightness
+                                aiEnhanceEnabled = true
+                                applyLiveEdits()
+                                isAnalyzingAi = false
+                            }
+                        }
+                    ) {
+                        if (isAnalyzingAi) {
+                            CircularProgressIndicator(
+                                color = CameraGold,
+                                modifier = Modifier.size(18.dp),
+                                strokeWidth = 2.dp
+                            )
+                        } else {
+                            Icon(
+                                imageVector = Icons.Default.AutoAwesome,
+                                contentDescription = "AI Neural Enhance",
+                                tint = CameraGold
+                            )
+                        }
+                    }
+
                     // Reset edits
                     IconButton(
                         onClick = {
@@ -173,6 +211,7 @@ fun PhotoEditorScreen(
                             selectedPreset = ColorStudioPreset.NATURAL
                             aiEnhanceEnabled = false
                             rotationAngle = 0f
+                            aiResult = null
                             currentBitmap = originalBitmap
                         }
                     ) {
@@ -236,6 +275,26 @@ fun PhotoEditorScreen(
                             .padding(8.dp),
                         contentScale = ContentScale.Fit
                     )
+                }
+
+                // AI Scene Banner
+                if (aiResult != null) {
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.TopCenter)
+                            .padding(top = 12.dp, start = 16.dp, end = 16.dp)
+                            .clip(RoundedCornerShape(14.dp))
+                            .background(Color.Black.copy(alpha = 0.75f))
+                            .border(1.dp, CameraGold.copy(alpha = 0.5f), RoundedCornerShape(14.dp))
+                            .padding(horizontal = 14.dp, vertical = 6.dp)
+                    ) {
+                        Text(
+                            text = "✨ ${aiResult!!.sceneNameAr} • ${aiResult!!.adviceAr}",
+                            color = CameraGold,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
 
                 // Hold to compare Original overlay button

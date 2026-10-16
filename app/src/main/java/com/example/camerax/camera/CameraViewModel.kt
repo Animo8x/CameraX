@@ -202,19 +202,17 @@ class CameraViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     fun setZoomRatio(ratio: Float) {
-        val minLimit = if (_uiState.value.capabilities.hasUltraWideLens || _uiState.value.capabilities.minZoomRatio < 0.95f) {
-            _uiState.value.capabilities.minZoomRatio.coerceAtMost(0.5f)
-        } else {
-            _uiState.value.capabilities.minZoomRatio
-        }
-        val maxLimit = if (_uiState.value.extendedZoom100xEnabled) 100f else _uiState.value.capabilities.maxZoomRatio
+        val hwMin = _uiState.value.capabilities.minZoomRatio
+        val hwMax = _uiState.value.capabilities.maxZoomRatio
+        val maxLimit = if (_uiState.value.extendedZoom100xEnabled) 100f else hwMax
+        // Always allow 0.5f as the minimum ratio
+        val minLimit = 0.5f
         val clamped = ratio.coerceIn(minLimit, maxLimit)
         
-        val hwMax = _uiState.value.capabilities.maxZoomRatio
-        val digitalScale = if (clamped > hwMax && hwMax > 0f) {
-            clamped / hwMax
-        } else {
-            1.0f
+        val digitalScale = when {
+            clamped > hwMax && hwMax > 0f -> clamped / hwMax
+            clamped < hwMin && hwMin >= 0.95f -> 0.82f // Digital wide-angle expansion mode
+            else -> 1.0f
         }
 
         _uiState.value = _uiState.value.copy(
@@ -222,8 +220,8 @@ class CameraViewModel(application: Application) : AndroidViewModel(application) 
             digitalZoomScale = digitalScale
         )
 
-        // For values above physical maxZoomRatio, CameraX will use max hardware zoom, and display crop takes effect
-        val hwZoom = clamped.coerceIn(_uiState.value.capabilities.minZoomRatio, hwMax)
+        // Pass only valid hardware range to CameraX control
+        val hwZoom = clamped.coerceIn(hwMin, hwMax)
         try {
             activeCameraControl?.setZoomRatio(hwZoom)
         } catch (ignored: Exception) {}

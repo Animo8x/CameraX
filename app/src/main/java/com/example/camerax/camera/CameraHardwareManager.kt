@@ -87,12 +87,10 @@ class CameraHardwareManager(private val context: Context) {
                 hasUltraWide = true
             }
 
-            // Generate clean sensible zoom pills for this camera
+            // Generate clean sensible zoom pills for this camera (Always include 0.5x wide option)
             val zoomSteps = mutableListOf<Float>()
-            if (hasUltraWide || minZoom < 0.95f) {
-                val uwVal = if (minZoom < 0.95f) roundToOneDecimal(minZoom) else 0.5f
-                zoomSteps.add(uwVal)
-            }
+            val uwVal = if (minZoom < 0.95f) roundToOneDecimal(minZoom) else 0.5f
+            zoomSteps.add(uwVal)
             zoomSteps.add(1.0f)
             if (maxZoom >= 2.0f) zoomSteps.add(2.0f)
             if (maxZoom >= 3.0f && (hasUltraWide || maxZoom >= 5.0f)) zoomSteps.add(3.0f)

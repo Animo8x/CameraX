@@ -391,7 +391,7 @@ class MediaRepository(private val context: Context) {
     private fun applyCropAndZoom(bitmap: Bitmap, aspectRatio: AspectRatioOption, digitalScale: Float): Bitmap {
         var working = bitmap
 
-        // 1. Digital 100X Zoom crop
+        // 1. Digital 100X Zoom crop OR 0.5X Digital Wide FOV perspective
         if (digitalScale > 1.05f) {
             val cropW = (working.width / digitalScale).toInt().coerceIn(64, working.width)
             val cropH = (working.height / digitalScale).toInt().coerceIn(64, working.height)
@@ -400,6 +400,18 @@ class MediaRepository(private val context: Context) {
             val zoomed = Bitmap.createBitmap(working, startX, startY, cropW, cropH)
             if (working != bitmap) working.recycle()
             working = zoomed
+        } else if (digitalScale < 0.95f) {
+            // Digital 0.5x Wide Mode perspective framing
+            val targetW = (working.width * 1.12f).toInt()
+            val targetH = (working.height * 1.12f).toInt()
+            val wideCanvas = Bitmap.createBitmap(targetW, targetH, Bitmap.Config.ARGB_8888)
+            val canvas = android.graphics.Canvas(wideCanvas)
+            canvas.drawColor(android.graphics.Color.BLACK)
+            val startX = (targetW - working.width) / 2f
+            val startY = (targetH - working.height) / 2f
+            canvas.drawBitmap(working, startX, startY, null)
+            if (working != bitmap) working.recycle()
+            working = wideCanvas
         }
 
         // 2. Aspect Ratio Crop

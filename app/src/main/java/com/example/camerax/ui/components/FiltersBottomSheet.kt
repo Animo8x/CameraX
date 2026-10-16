@@ -1,5 +1,6 @@
 package com.example.camerax.ui.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -8,17 +9,17 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -31,63 +32,64 @@ import com.example.camerax.model.CameraFilter
 import com.example.ui.theme.CameraGold
 import com.example.ui.theme.ObsidianCard
 import com.example.ui.theme.ObsidianDark
-import com.example.ui.theme.ObsidianSurface
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FiltersBottomSheet(
     currentFilter: CameraFilter,
     onSelectFilter: (CameraFilter) -> Unit,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-
-    ModalBottomSheet(
-        onDismissRequest = onDismiss,
-        sheetState = sheetState,
-        containerColor = ObsidianSurface,
-        dragHandle = null
+    Card(
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.Black.copy(alpha = 0.84f)),
+        border = androidx.compose.foundation.BorderStroke(1.dp, CameraGold.copy(alpha = 0.45f)),
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 14.dp, vertical = 6.dp)
+            .testTag("filters_compact_panel")
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 16.dp)
+                .padding(horizontal = 14.dp, vertical = 10.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Column {
+                Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
                         text = "Camera Filters",
                         color = CameraGold,
-                        fontSize = 18.sp,
+                        fontSize = 15.sp,
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = "Real-time stylistic color profiles",
-                        color = Color(0xFF94A3B8),
+                        text = " • ${currentFilter.titleEn}",
+                        color = Color.White.copy(alpha = 0.85f),
                         fontSize = 12.sp
                     )
                 }
-                IconButton(onClick = onDismiss) {
+                IconButton(onClick = onDismiss, modifier = Modifier.size(32.dp)) {
                     Icon(
                         imageVector = Icons.Default.Close,
                         contentDescription = "Close",
-                        tint = Color.White
+                        tint = Color.White,
+                        modifier = Modifier.size(19.dp)
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             val scroll = rememberScrollState()
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .horizontalScroll(scroll),
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 CameraFilter.values().forEach { filter ->
                     val isSelected = filter == currentFilter
@@ -98,26 +100,24 @@ fun FiltersBottomSheet(
                         modifier = Modifier.testTag("filter_${filter.name.lowercase()}")
                     ) {
                         Column(
-                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
+                            modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Text(
                                 text = filter.titleEn,
                                 color = if (isSelected) ObsidianDark else Color.White,
-                                fontSize = 13.sp,
+                                fontSize = 12.sp,
                                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
                             )
                             Text(
                                 text = filter.titleAr,
                                 color = if (isSelected) ObsidianDark.copy(alpha = 0.8f) else Color(0xFF94A3B8),
-                                fontSize = 11.sp
+                                fontSize = 10.sp
                             )
                         }
                     }
                 }
             }
-
-            Spacer(modifier = Modifier.height(18.dp))
         }
     }
 }

@@ -28,6 +28,19 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.border
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -437,6 +450,41 @@ fun CameraScreen(
             }
         }
 
+        // AI Neural Enhancement Active Badge
+        if (uiState.aiEnhanceConfig.enabled && !uiState.isRecording) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 95.dp),
+                contentAlignment = Alignment.TopCenter
+            ) {
+                Box(
+                    modifier = Modifier
+                        .clip(androidx.compose.foundation.shape.RoundedCornerShape(16.dp))
+                        .background(Color.Black.copy(alpha = 0.70f))
+                        .border(1.dp, com.example.ui.theme.CameraGold.copy(alpha = 0.45f), androidx.compose.foundation.shape.RoundedCornerShape(16.dp))
+                        .padding(horizontal = 12.dp, vertical = 5.dp)
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.AutoAwesome,
+                            contentDescription = null,
+                            tint = com.example.ui.theme.CameraGold,
+                            modifier = Modifier.size(13.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = "AI NEURAL ENGINE ACTIVE",
+                            color = Color.White,
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 0.5.sp
+                        )
+                    }
+                }
+            }
+        }
+
         // Top UI Controls & Telemetry
         Column(
             modifier = Modifier
@@ -467,6 +515,25 @@ fun CameraScreen(
                 .fillMaxWidth()
                 .align(Alignment.BottomCenter)
         ) {
+            // Compact Floating Color Studio panel (Viewfinder above remains 100% visible & live!)
+            if (showColorStudioSheet) {
+                ColorStudioBottomSheet(
+                    config = uiState.colorStudioConfig,
+                    onConfigChange = { viewModel.setColorStudioConfig(it) },
+                    onSelectPreset = { viewModel.setColorStudioPreset(it) },
+                    onDismiss = { showColorStudioSheet = false }
+                )
+            }
+
+            // Compact Floating Filters panel
+            if (showFiltersSheet) {
+                FiltersBottomSheet(
+                    currentFilter = uiState.selectedFilter,
+                    onSelectFilter = { viewModel.setFilter(it) },
+                    onDismiss = { showFiltersSheet = false }
+                )
+            }
+
             // Pro Controls HUD if in PRO mode
             if (uiState.currentMode == CameraMode.PRO) {
                 ProControlsHUD(
@@ -480,6 +547,27 @@ fun CameraScreen(
                     onToggleHistogram = { viewModel.toggleHistogram() },
                     onToggleFocusPeaking = { viewModel.toggleFocusPeaking() }
                 )
+            }
+
+            // 0.5x Optical vs Digital Wide Badge Indicator
+            if (uiState.zoomRatio < 0.95f) {
+                val isOptical = uiState.capabilities.minZoomRatio < 0.95f || uiState.capabilities.hasUltraWideLens
+                val badgeText = if (isOptical) "0.5X ULTRA-WIDE • OPTICAL" else "0.5X WIDE • DIGITAL FOV"
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.CenterHorizontally)
+                        .clip(androidx.compose.foundation.shape.RoundedCornerShape(12.dp))
+                        .background(Color.Black.copy(alpha = 0.70f))
+                        .padding(horizontal = 12.dp, vertical = 4.dp)
+                ) {
+                    Text(
+                        text = badgeText,
+                        color = com.example.ui.theme.CameraGold,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 0.5.sp
+                    )
+                }
             }
 
             // Zoom Pills
@@ -515,25 +603,6 @@ fun CameraScreen(
                 },
                 onSwitchCamera = { viewModel.toggleCameraFacing() },
                 onOpenGallery = onNavigateToGallery
-            )
-        }
-
-        // Color Studio Modal
-        if (showColorStudioSheet) {
-            ColorStudioBottomSheet(
-                config = uiState.colorStudioConfig,
-                onConfigChange = { viewModel.setColorStudioConfig(it) },
-                onSelectPreset = { viewModel.setColorStudioPreset(it) },
-                onDismiss = { showColorStudioSheet = false }
-            )
-        }
-
-        // Filters Modal
-        if (showFiltersSheet) {
-            FiltersBottomSheet(
-                currentFilter = uiState.selectedFilter,
-                onSelectFilter = { viewModel.setFilter(it) },
-                onDismiss = { showFiltersSheet = false }
             )
         }
     }
